@@ -33,20 +33,21 @@ public class UserConsumer implements Runnable{
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "my-application");
         properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
-        KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(properties);
-        consumer.subscribe(Collections.singletonList("MyTopic"));
-        System.out.println("INSIDE RUN OF CONSUMER");
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(properties)) {
+            consumer.subscribe(Collections.singletonList("MyTopic"));
+            System.out.println("INSIDE RUN OF CONSUMER");//should've used logger
 
-        while (true) {
-            ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+            while (true) {
+                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
 
-            for (ConsumerRecord<String, String> record:records) {
-                System.out.println("VALUE:"+record.value());
-                try {
-                    userRepository.save(new ObjectMapper().readValue(record.value(), User.class));
-                    System.out.println(userRepository.findAll().size());
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
+                for (ConsumerRecord<String, String> record : records) {
+                    System.out.println("VALUE:" + record.value());
+                    try {
+                        userRepository.save(new ObjectMapper().readValue(record.value(), User.class));
+                        System.out.println(userRepository.findAll().size());
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
