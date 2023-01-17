@@ -1,16 +1,39 @@
 package com.kafka.consumer.example.Model;
 
+import lombok.With;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
 @Table(name = "user_table")
-public class User {
+@With
+public class UserEntity {
+    public UserEntity(String id, String name, Integer age, Float rank) {
+        this.id = id;
+        this.name = name;
+        this.age = age;
+        this.rank = rank;
+    }
+
+    public UserEntity() {
+    }
+
     @Id
     private String id;
     private String name;
     private Integer age;
+
+    public Float getRank() {
+        return rank;
+    }
+
+    public void setRank(Float rank) {
+        this.rank = rank;
+    }
+
+    private Float rank;
 
     public String getId() {
         return id;
