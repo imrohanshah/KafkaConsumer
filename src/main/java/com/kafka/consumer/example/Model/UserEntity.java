@@ -34,6 +34,15 @@ public class UserEntity {
     }
 
     private Float rank;
+    private Float previousRank;
+
+    public Float getPreviousRank() {
+        return previousRank;
+    }
+
+    public void setPreviousRank(Float previousRank) {
+        this.previousRank = previousRank;
+    }
 
     public String getId() {
         return id;

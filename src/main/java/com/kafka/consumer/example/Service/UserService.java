@@ -82,6 +82,56 @@ public class UserService {
             userRepository.saveAll(users);
     }
 
+    public void reorderRanksFull(UserEntity user) {
+        List<UserEntity> users = userRepository.sortRank();
+        UserEntity newRankUser = users.get(user.getPreviousRank().intValue() - 1);
+        for (UserEntity userEntity:users) {
+            if (userEntity.getRank().equals(user.getRank())){
+                newRankUser.setRank(user.getRank());
+            }
+            if (userEntity.getRank() > user.getRank()) {
+                userEntity.setRank(userEntity.getRank()+1);
+            }
+        }
+        users.add(newRankUser);
+        userRepository.saveAll(users);
+    }
+
+    public void reorderRanks(UserEntity user) {
+        List<UserEntity> users = userRepository.sortRank();
+        Map<Integer, UserEntity> rankedUsers = new HashMap<>();
+        for (int i = 0; i < users.size(); i++) {
+            rankedUsers.put(i+1, users.get(i));
+        }
+        UserEntity before = rankedUsers.get(user.getRank().intValue() - 1);
+        UserEntity after = rankedUsers.get(user.getRank().intValue());
+        float rank = 0;
+        if (before==null){
+            rank = (0 + after.getRank())/2;
+        } else if (after == null){
+            rank = (before.getRank() + before.getRank()+1)/2;
+        }else {
+            rank = (before.getRank() + after.getRank()) / 2;
+        }
+        UserEntity newRankUser = rankedUsers.get(user.getPreviousRank().intValue());
+        newRankUser.setRank(rank);
+        if (significantDigits(rank) >= 5){
+            users.add(newRankUser);
+            users.sort(Comparator.comparing(UserEntity::getRank));
+            userRepository.deleteAll();
+            int newRank = 1;
+            for (UserEntity userEntity:users) {
+                userEntity.setRank((float) newRank);
+                newRank++;
+            }
+            userRepository.saveAll(users);
+        }
+        else {
+            userRepository.save(newRankUser);
+        }
+    }
+
+
     int significantDigits(double value)
     {
         int count = 0;
@@ -92,16 +142,10 @@ public class UserService {
 
     public void setup() {
         List<UserEntity> userEntities = new ArrayList<>();
-        userEntities.add(new UserEntity("1", "Gopal", 20, 1.0f));
-        userEntities.add(new UserEntity("2", "Siddhant", 20, 2.0f));
-        userEntities.add(new UserEntity("3", "Rohan", 20, 3.0f));
-        userEntities.add(new UserEntity("4", "Praveen", 20, 4.0f));
-        userEntities.add(new UserEntity("5", "Siddharth", 20, 5.0f));
-        userEntities.add(new UserEntity("6", "Devang", 20, 6.0f));
-        userEntities.add(new UserEntity("7", "Krutika", 20, 7.0f));
-        userEntities.add(new UserEntity("8", "Mehul", 20, 8.0f));
-        userEntities.add(new UserEntity("9", "Umar", 20, 9.0f));
-        userEntities.add(new UserEntity("10", "Bhavesh", 20, 10.0f));
+
+        for (int i = 0; i < 150; i++) {
+            userEntities.add(new UserEntity(""+i, "Rohan", 20, (float) i));
+        }
         userRepository.saveAll(userEntities);
     }
 

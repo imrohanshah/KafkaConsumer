@@ -3,6 +3,7 @@ package com.kafka.consumer.example.Controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.kafka.consumer.example.Model.UserEntity;
 import com.kafka.consumer.example.Service.UserService;
+import org.elasticsearch.common.inject.internal.Stopwatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,9 +40,14 @@ public class UserController {
         userService.deleteAll();
     }
 
-    @PostMapping("reorder")
+    @PostMapping("/reorder")
     public void reorder(@RequestBody UserEntity user){
         userService.reorder(user);
+    }
+
+    @PostMapping("/reorderRanks")
+    public void reorderRanks(@RequestBody UserEntity user){
+        userService.reorderRanks(user);
     }
 
     @PostMapping("reorderTest")
@@ -49,8 +55,36 @@ public class UserController {
         userService.reorderFull(user);
     }
 
+    @PostMapping("reorderRanksFull")
+    public void reorderRanksFull(@RequestBody UserEntity user){
+        userService.reorderRanksFull(user);
+    }
+
     @PostMapping("setup")
     public void setup(){
         userService.setup();
     }
+
+    @PostMapping("test")
+    public void test(){
+        deleteAllUser();
+        setup();
+        UserEntity user = new UserEntity();
+        user.setPreviousRank(10f);
+        user.setRank(3f);
+        long startTime1 = System.currentTimeMillis();
+        for (int i = 0; i < 100; i++) {
+            reorderRanks(user);
+        }
+        System.out.println("Time taken for 1 = " + (System.currentTimeMillis() - startTime1));
+        deleteAllUser();
+        setup();
+        long startTime2 = System.currentTimeMillis();
+        for (int i = 0; i < 100; i++) {
+            reorderRanksFull(user);
+        }
+        System.out.println("Time taken for 1 = " + (System.currentTimeMillis() - startTime2));
+
+    }
+
 }
